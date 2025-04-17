@@ -1,5 +1,5 @@
-import {StyleSheet, Text, View} from 'react-native';
-import {NewsList} from "@/components/NewsList";
+import { StyleSheet, Text, View } from 'react-native';
+import { NewsList } from "@/components/NewsList";
 
 export default function HomeScreen() {
   return (
@@ -18,5 +18,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  registerButton: {
+    marginBottom: 20,
   }
 });
