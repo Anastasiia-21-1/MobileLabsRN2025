@@ -17,7 +17,7 @@ export async function loadTasks() {
   } catch (error) {
     throw new Error(`Error loading tasks: ${(error as Error).message}`);
   }
-};
+}
 
 export async function saveTasks(updatedTasks: Task[]) {
   try {
@@ -25,4 +25,4 @@ export async function saveTasks(updatedTasks: Task[]) {
   } catch (error) {
     console.error('Error saving tasks:', error);
   }
-};
+}
