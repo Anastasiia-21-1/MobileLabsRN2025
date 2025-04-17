@@ -11,11 +11,11 @@ export function AppSelectDate({value, onChange}: AppSelectDateProps) {
   const [open, setOpen] = useState(false)
 
   return (
-    <>
+    <View>
       <TouchableOpacity onPress={() => setOpen(true)}>
         <View style={styles.button}>
           <Text>
-            Select date{value && `: ${value.toLocaleDateString()} ${value.toLocaleTimeString()}`}
+            Обрати час: {value && ` ${value.toLocaleDateString()} ${value.toLocaleTimeString()}`}
           </Text>
         </View>
       </TouchableOpacity>
@@ -31,7 +31,7 @@ export function AppSelectDate({value, onChange}: AppSelectDateProps) {
           setOpen(false)
         }}
       />
-    </>
+    </View>
   )
 }
 
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     borderColor: '#d7d7d7',
     borderWidth: 1,
     borderRadius: 5,
-    backgroundColor: "white",
+    backgroundColor: "#ffffff",
     padding: 10,
     marginBottom: 12,
   }
