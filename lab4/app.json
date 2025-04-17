@@ -37,6 +37,10 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "oneSignalId": "8e944b46-6b2d-45aa-9179-fb2942b052e4",
+      "oneSignalAuthToken": "os_v2_app_r2kewrtlfvc2velz7muufmcs4qelun3hha4ef5ezkxxp7h6m4e7iodlzhv5t4u2tjnfor4om2da4kpe46vaqmgowb2scriy4gzlblwq"
     }
   }
 }
