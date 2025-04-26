@@ -8,6 +8,7 @@ import {NavigationControls} from '@/components/NavigationControls';
 import {CreateFolderDialog} from '@/components/CreateFolderDialog';
 import {CreateFileDialog} from '@/components/CreateFileDialog';
 import {TextFileViewer} from '@/components/TextFileViewer';
+import {DeleteConfirmationDialog} from '@/components/DeleteConfirmationDialog';
 import {FileSystemEntry, fileSystemService} from "@/services/FileSystemService";
 
 export default function HomeScreen() {
@@ -17,6 +18,8 @@ export default function HomeScreen() {
   const [isFileDialogVisible, setIsFileDialogVisible] = useState(false);
   const [isTextFileViewerVisible, setIsTextFileViewerVisible] = useState(false);
   const [currentTextFile, setCurrentTextFile] = useState<{ path: string; name: string } | null>(null);
+  const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<FileSystemEntry | null>(null);
 
   useEffect(() => {
     const initializeFileSystem = async () => {
@@ -76,6 +79,24 @@ export default function HomeScreen() {
     }
   };
 
+  const handleDeletePress = (entry: FileSystemEntry) => {
+    setItemToDelete(entry);
+    setIsDeleteDialogVisible(true);
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      await fileSystemService.deleteFileOrFolder(itemToDelete.uri);
+      await loadDirectoryContents(currentPath);
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    } finally {
+      setItemToDelete(null);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.fileManager}>
@@ -94,6 +115,7 @@ export default function HomeScreen() {
         <FileList
           entries={directoryContents}
           onEntryPress={handleEntryPress}
+          onDeletePress={handleDeletePress}
         />
       </ThemedView>
 
@@ -115,6 +137,16 @@ export default function HomeScreen() {
           filePath={currentTextFile.path}
           fileName={currentTextFile.name}
           onClose={() => setIsTextFileViewerVisible(false)}
+        />
+      )}
+
+      {itemToDelete && (
+        <DeleteConfirmationDialog
+          visible={isDeleteDialogVisible}
+          itemName={itemToDelete.name}
+          isDirectory={itemToDelete.isDirectory}
+          onClose={() => setIsDeleteDialogVisible(false)}
+          onDelete={handleDelete}
         />
       )}
     </SafeAreaView>

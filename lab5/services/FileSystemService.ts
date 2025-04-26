@@ -149,6 +149,20 @@ class FileSystemService {
       throw error;
     }
   }
+
+  public async deleteFileOrFolder(path: string): Promise<void> {
+    try {
+      const info = await FileSystem.getInfoAsync(path);
+      if (!info.exists) {
+        throw new Error('File or folder does not exist');
+      }
+
+      await FileSystem.deleteAsync(path, { idempotent: true });
+    } catch (error) {
+      console.error('Error deleting file or folder:', error);
+      throw error;
+    }
+  }
 }
 
 export const fileSystemService = new FileSystemService();

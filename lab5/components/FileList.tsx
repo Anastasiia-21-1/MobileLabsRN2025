@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { StyleSheet, FlatList, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
@@ -8,25 +8,35 @@ import { FileSystemEntry } from '@/services/FileSystemService';
 interface FileListProps {
   entries: FileSystemEntry[];
   onEntryPress: (entry: FileSystemEntry) => void;
+  onDeletePress: (entry: FileSystemEntry) => void;
 }
 
-export const FileList: React.FC<FileListProps> = ({ entries, onEntryPress }) => {
+export const FileList: React.FC<FileListProps> = ({ entries, onEntryPress, onDeletePress }) => {
   const renderItem = ({ item }: { item: FileSystemEntry }) => {
     return (
-      <TouchableOpacity
-        style={styles.item}
-        onPress={() => onEntryPress(item)}
-      >
-        <ThemedView style={styles.itemContent}>
-          <Ionicons
-            name={item.isDirectory ? 'folder' : 'document'}
-            size={24}
-            color={item.isDirectory ? '#FFD700' : '#A9A9A9'}
-            style={styles.icon}
-          />
-          <ThemedText style={styles.itemName}>{item.name}</ThemedText>
-        </ThemedView>
-      </TouchableOpacity>
+      <View style={styles.item}>
+        <TouchableOpacity
+          style={styles.itemTouchable}
+          onPress={() => onEntryPress(item)}
+        >
+          <ThemedView style={styles.itemContent}>
+            <Ionicons
+              name={item.isDirectory ? 'folder' : 'document'}
+              size={24}
+              color={item.isDirectory ? '#FFD700' : '#A9A9A9'}
+              style={styles.icon}
+            />
+            <ThemedText style={styles.itemName}>{item.name}</ThemedText>
+          </ThemedView>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => onDeletePress(item)}
+        >
+          <Ionicons name="trash-outline" size={22} color="#FF3B30" />
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -53,10 +63,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   item: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#EEEEEE',
+  },
+  itemTouchable: {
+    flex: 1,
   },
   itemContent: {
     flexDirection: 'row',
@@ -67,6 +82,11 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 16,
+    flex: 1,
+  },
+  deleteButton: {
+    padding: 8,
+    marginLeft: 8,
   },
   emptyContainer: {
     flex: 1,
