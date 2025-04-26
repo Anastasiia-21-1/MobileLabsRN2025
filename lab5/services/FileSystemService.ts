@@ -32,18 +32,18 @@ class FileSystemService {
   public async getDirectoryContents(directoryPath: string): Promise<FileSystemEntry[]> {
     try {
       const contents = await FileSystem.readDirectoryAsync(directoryPath);
-      
+
       const contentPromises = contents.map(async (name) => {
         const uri = directoryPath + (directoryPath.endsWith('/') ? '' : '/') + name;
         const info = await FileSystem.getInfoAsync(uri);
-        
+
         return {
           name,
           uri,
           isDirectory: info.isDirectory || false,
         };
       });
-      
+
       return Promise.all(contentPromises);
     } catch (error) {
       console.error('Error reading directory contents:', error);
@@ -55,21 +55,39 @@ class FileSystemService {
     if (path === this.baseDirectory) {
       return null;
     }
-    
+
     const normalizedPath = path.endsWith('/') ? path.slice(0, -1) : path;
-    
+
     const lastSlashIndex = normalizedPath.lastIndexOf('/');
     if (lastSlashIndex === -1) {
       return null;
     }
-    
+
     const parentPath = normalizedPath.substring(0, lastSlashIndex + 1);
-    
+
     if (parentPath.length < this.baseDirectory.length) {
       return this.baseDirectory;
     }
-    
+
     return parentPath;
+  }
+
+  public async createFolder(parentPath: string, folderName: string): Promise<string> {
+    try {
+      const normalizedPath = parentPath.endsWith('/') ? parentPath : parentPath + '/';
+      const folderPath = normalizedPath + folderName;
+
+      const folderInfo = await FileSystem.getInfoAsync(folderPath);
+      if (folderInfo.exists) {
+        throw new Error('A folder with this name already exists');
+      }
+
+      await FileSystem.makeDirectoryAsync(folderPath);
+      return folderPath;
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      throw error;
+    }
   }
 }
 

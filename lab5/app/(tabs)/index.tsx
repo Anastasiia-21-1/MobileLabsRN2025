@@ -5,11 +5,13 @@ import {ThemedView} from '@/components/ThemedView';
 import {FileList} from '@/components/FileList';
 import {PathDisplay} from '@/components/PathDisplay';
 import {NavigationControls} from '@/components/NavigationControls';
+import {CreateFolderDialog} from '@/components/CreateFolderDialog';
 import {FileSystemEntry, fileSystemService} from "@/services/FileSystemService";
 
 export default function HomeScreen() {
   const [currentPath, setCurrentPath] = useState<string>('');
   const [directoryContents, setDirectoryContents] = useState<FileSystemEntry[]>([]);
+  const [isFolderDialogVisible, setIsFolderDialogVisible] = useState(false);
 
   useEffect(() => {
     const initializeFileSystem = async () => {
@@ -48,6 +50,15 @@ export default function HomeScreen() {
 
   const canGoUp = currentPath !== fileSystemService.getBaseDirectory();
 
+  const handleCreateFolder = async (folderName: string) => {
+    try {
+      await fileSystemService.createFolder(currentPath, folderName);
+      await loadDirectoryContents(currentPath);
+    } catch (error) {
+      console.error('Error creating folder:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.fileManager}>
@@ -59,6 +70,7 @@ export default function HomeScreen() {
         <NavigationControls
           canGoUp={canGoUp}
           onGoUp={handleGoUp}
+          onCreateFolder={() => setIsFolderDialogVisible(true)}
         />
 
         <FileList
@@ -66,6 +78,12 @@ export default function HomeScreen() {
           onEntryPress={handleEntryPress}
         />
       </ThemedView>
+
+      <CreateFolderDialog
+        visible={isFolderDialogVisible}
+        onClose={() => setIsFolderDialogVisible(false)}
+        onCreateFolder={handleCreateFolder}
+      />
     </SafeAreaView>
   );
 }
