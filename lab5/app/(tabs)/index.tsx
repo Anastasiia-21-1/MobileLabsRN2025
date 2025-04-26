@@ -56,6 +56,9 @@ export default function HomeScreen() {
           basePath={fileSystemService.getBaseDirectory()}
         />
 
+        <NavigationControls
+          canGoUp={canGoUp}
+          onGoUp={handleGoUp}
         />
 
         <FileList
