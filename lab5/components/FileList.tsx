@@ -9,9 +9,10 @@ interface FileListProps {
   entries: FileSystemEntry[];
   onEntryPress: (entry: FileSystemEntry) => void;
   onDeletePress: (entry: FileSystemEntry) => void;
+  onInfoPress: (entry: FileSystemEntry) => void;
 }
 
-export const FileList: React.FC<FileListProps> = ({ entries, onEntryPress, onDeletePress }) => {
+export const FileList: React.FC<FileListProps> = ({ entries, onEntryPress, onDeletePress, onInfoPress }) => {
   const renderItem = ({ item }: { item: FileSystemEntry }) => {
     return (
       <View style={styles.item}>
@@ -31,7 +32,14 @@ export const FileList: React.FC<FileListProps> = ({ entries, onEntryPress, onDel
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.deleteButton}
+          style={styles.actionButton}
+          onPress={() => onInfoPress(item)}
+        >
+          <Ionicons name="information-circle-outline" size={22} color="#007AFF" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.actionButton}
           onPress={() => onDeletePress(item)}
         >
           <Ionicons name="trash-outline" size={22} color="#FF3B30" />
@@ -84,9 +92,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flex: 1,
   },
-  deleteButton: {
+  actionButton: {
     padding: 8,
-    marginLeft: 8,
+    marginLeft: 4,
   },
   emptyContainer: {
     flex: 1,

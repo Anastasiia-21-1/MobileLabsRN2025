@@ -4,6 +4,8 @@ export interface FileSystemEntry {
   name: string;
   uri: string;
   isDirectory: boolean;
+  size?: number;
+  modificationTime?: number;
 }
 
 class FileSystemService {
@@ -35,12 +37,14 @@ class FileSystemService {
 
       const contentPromises = contents.map(async (name) => {
         const uri = directoryPath + (directoryPath.endsWith('/') ? '' : '/') + name;
-        const info = await FileSystem.getInfoAsync(uri);
+        const info = await FileSystem.getInfoAsync(uri, { size: true });
 
         return {
           name,
           uri,
           isDirectory: info.isDirectory || false,
+          size: info.size,
+          modificationTime: info.modificationTime,
         };
       });
 
@@ -160,6 +164,37 @@ class FileSystemService {
       await FileSystem.deleteAsync(path, { idempotent: true });
     } catch (error) {
       console.error('Error deleting file or folder:', error);
+      throw error;
+    }
+  }
+
+  public async getFileDetails(filePath: string): Promise<{
+    name: string;
+    type: string;
+    size: number;
+    modificationTime: number;
+    isDirectory: boolean;
+  }> {
+    try {
+      const info = await FileSystem.getInfoAsync(filePath, { size: true });
+
+      if (!info.exists) {
+        throw new Error('File does not exist');
+      }
+
+      const name = filePath.split('/').pop() || '';
+      const extension = name.includes('.') ? name.split('.').pop() || '' : '';
+      const type = info.isDirectory ? 'Directory' : extension.toUpperCase();
+
+      return {
+        name,
+        type,
+        size: info.size || 0,
+        modificationTime: info.modificationTime || 0,
+        isDirectory: info.isDirectory || false,
+      };
+    } catch (error) {
+      console.error('Error getting file details:', error);
       throw error;
     }
   }

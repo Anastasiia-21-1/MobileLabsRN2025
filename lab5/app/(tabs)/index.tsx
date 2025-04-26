@@ -9,6 +9,7 @@ import {CreateFolderDialog} from '@/components/CreateFolderDialog';
 import {CreateFileDialog} from '@/components/CreateFileDialog';
 import {TextFileViewer} from '@/components/TextFileViewer';
 import {DeleteConfirmationDialog} from '@/components/DeleteConfirmationDialog';
+import {FileDetailsDialog} from '@/components/FileDetailsDialog';
 import {FileSystemEntry, fileSystemService} from "@/services/FileSystemService";
 
 export default function HomeScreen() {
@@ -20,6 +21,8 @@ export default function HomeScreen() {
   const [currentTextFile, setCurrentTextFile] = useState<{ path: string; name: string } | null>(null);
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<FileSystemEntry | null>(null);
+  const [isFileDetailsVisible, setIsFileDetailsVisible] = useState(false);
+  const [fileToShowDetails, setFileToShowDetails] = useState<string>('');
 
   useEffect(() => {
     const initializeFileSystem = async () => {
@@ -97,6 +100,11 @@ export default function HomeScreen() {
     }
   };
 
+  const handleInfoPress = (entry: FileSystemEntry) => {
+    setFileToShowDetails(entry.uri);
+    setIsFileDetailsVisible(true);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.fileManager}>
@@ -116,6 +124,7 @@ export default function HomeScreen() {
           entries={directoryContents}
           onEntryPress={handleEntryPress}
           onDeletePress={handleDeletePress}
+          onInfoPress={handleInfoPress}
         />
       </ThemedView>
 
@@ -149,6 +158,12 @@ export default function HomeScreen() {
           onDelete={handleDelete}
         />
       )}
+
+      <FileDetailsDialog
+        visible={isFileDetailsVisible}
+        filePath={fileToShowDetails}
+        onClose={() => setIsFileDetailsVisible(false)}
+      />
     </SafeAreaView>
   );
 }
