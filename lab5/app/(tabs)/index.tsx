@@ -6,12 +6,14 @@ import {FileList} from '@/components/FileList';
 import {PathDisplay} from '@/components/PathDisplay';
 import {NavigationControls} from '@/components/NavigationControls';
 import {CreateFolderDialog} from '@/components/CreateFolderDialog';
+import {CreateFileDialog} from '@/components/CreateFileDialog';
 import {FileSystemEntry, fileSystemService} from "@/services/FileSystemService";
 
 export default function HomeScreen() {
   const [currentPath, setCurrentPath] = useState<string>('');
   const [directoryContents, setDirectoryContents] = useState<FileSystemEntry[]>([]);
   const [isFolderDialogVisible, setIsFolderDialogVisible] = useState(false);
+  const [isFileDialogVisible, setIsFileDialogVisible] = useState(false);
 
   useEffect(() => {
     const initializeFileSystem = async () => {
@@ -59,6 +61,15 @@ export default function HomeScreen() {
     }
   };
 
+  const handleCreateFile = async (fileName: string, content: string) => {
+    try {
+      await fileSystemService.createTextFile(currentPath, fileName, content);
+      await loadDirectoryContents(currentPath);
+    } catch (error) {
+      console.error('Error creating file:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.fileManager}>
@@ -71,6 +82,7 @@ export default function HomeScreen() {
           canGoUp={canGoUp}
           onGoUp={handleGoUp}
           onCreateFolder={() => setIsFolderDialogVisible(true)}
+          onCreateFile={() => setIsFileDialogVisible(true)}
         />
 
         <FileList
@@ -83,6 +95,12 @@ export default function HomeScreen() {
         visible={isFolderDialogVisible}
         onClose={() => setIsFolderDialogVisible(false)}
         onCreateFolder={handleCreateFolder}
+      />
+
+      <CreateFileDialog
+        visible={isFileDialogVisible}
+        onClose={() => setIsFileDialogVisible(false)}
+        onCreateFile={handleCreateFile}
       />
     </SafeAreaView>
   );

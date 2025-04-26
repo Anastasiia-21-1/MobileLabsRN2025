@@ -7,13 +7,14 @@ interface NavigationControlsProps {
   canGoUp: boolean;
   onGoUp: () => void;
   onCreateFolder: () => void;
+  onCreateFile: () => void;
 }
 
-export const NavigationControls: React.FC<NavigationControlsProps> = ({ canGoUp, onGoUp }) => {
 export const NavigationControls: React.FC<NavigationControlsProps> = ({ 
   canGoUp, 
   onGoUp,
   onCreateFolder,
+  onCreateFile
 }) => {
   return (
     <ThemedView style={styles.container}>
@@ -33,6 +34,11 @@ export const NavigationControls: React.FC<NavigationControlsProps> = ({
       >
         <Ionicons name="folder-open" size={24} color="#007AFF" />
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={onCreateFile}
+      >
         <Ionicons name="document-text" size={24} color="#007AFF" />
       </TouchableOpacity>
     </ThemedView>

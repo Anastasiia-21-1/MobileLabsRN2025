@@ -89,6 +89,29 @@ class FileSystemService {
       throw error;
     }
   }
+
+  public async createTextFile(parentPath: string, fileName: string, content: string): Promise<string> {
+    try {
+      const normalizedPath = parentPath.endsWith('/') ? parentPath : parentPath + '/';
+
+      if (!fileName.endsWith('.txt')) {
+        fileName = fileName + '.txt';
+      }
+
+      const filePath = normalizedPath + fileName;
+
+      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      if (fileInfo.exists) {
+        throw new Error('A file with this name already exists');
+      }
+
+      await FileSystem.writeAsStringAsync(filePath, content);
+      return filePath;
+    } catch (error) {
+      console.error('Error creating text file:', error);
+      throw error;
+    }
+  }
 }
 
 export const fileSystemService = new FileSystemService();
