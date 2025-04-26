@@ -2,7 +2,7 @@ import Constants from "expo-constants";
 import {LogLevel, NotificationWillDisplayEvent, OneSignal} from "react-native-onesignal";
 import axios from "axios";
 
-const oneSignalAppId = Constants?.expoConfig?.extra?.oneSignalAppId
+const oneSignalAppId = Constants?.expoConfig?.extra?.oneSignalId
 const oneSignalAuthToken = Constants?.expoConfig?.extra?.oneSignalAuthToken
 
 const oneSignalApi = axios.create({
@@ -19,7 +19,7 @@ if (!oneSignalAppId || !oneSignalAuthToken) {
 }
 
 export const send = async (title: string, description: string, time: Date) => {
-  return oneSignalApi.post("", {
+  return await oneSignalApi.post("", {
     params: {
       c: "push"
     },
@@ -28,7 +28,7 @@ export const send = async (title: string, description: string, time: Date) => {
       contents: {
         en: `${title}\n${description}`
       },
-      included_segments: ['todo'],
+      included_segments: ['All'],
       send_after: time
     }
   })

@@ -1,74 +1,162 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {Alert, Button, FlatList, StyleSheet} from 'react-native';
+import {ThemedText} from '@/components/ThemedText';
+import {ThemedView} from '@/components/ThemedView';
+import AppInput from "@/components/AppInput";
+import {Task} from "@/types/task";
+import {AppSelectDate} from "@/components/AppDatePicker";
+import {loadTasks, saveTasks} from "@/utils/storage";
+import {send, cancel} from "@/utils/onesignal";
+import {TaskItem} from "@/components/TaskItem";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 
-export default function HomeScreen() {
+export default function ToDoReminderScreen() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [reminderTime, setReminderTime] = useState(new Date());
+
+  useEffect(() => {
+    async function fetchTasks() {
+      try {
+        const savedTasks = await loadTasks();
+        if (savedTasks) {
+          setTasks(savedTasks);
+        }
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+        Alert.alert('Error', 'Failed to load tasks');
+      }
+    }
+
+    void fetchTasks();
+  }, []);
+
+  async function scheduleNotification(task: Task) {
+    try {
+      const {data} = await send(task.title, task.description, task.reminderTime);
+      return data?.id;
+    } catch (error) {
+      console.error('Error scheduling notification:', error);
+      return null;
+    }
+  }
+
+  async function cancelNotification(notificationId: string) {
+    try {
+      await cancel(notificationId);
+    } catch (error) {
+      console.error('Error canceling notification:', error);
+    }
+  }
+
+  async function addTask() {
+    if (!title.trim()) {
+      Alert.alert('Error', 'Please enter a task title');
+      return;
+    }
+
+    const newTask: Task = {
+      id: Date.now().toString(),
+      title,
+      description,
+      reminderTime,
+    };
+
+    const notificationId = await scheduleNotification(newTask);
+    if (notificationId) {
+      newTask.notificationId = notificationId;
+    }
+
+    const updatedTasks = [...tasks, newTask];
+    setTasks(updatedTasks);
+    await saveTasks(updatedTasks);
+
+    setTitle('');
+    setDescription('');
+    setReminderTime(new Date());
+  }
+
+  async function deleteTask(id: string) {
+    const taskToDelete = tasks.find(task => task.id === id);
+
+    if (taskToDelete?.notificationId) {
+      await cancelNotification(taskToDelete.notificationId);
+    }
+
+    const updatedTasks = tasks.filter(task => task.id !== id);
+    setTasks(updatedTasks);
+    await saveTasks(updatedTasks);
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <ThemedView style={styles.container}>
+      <ThemedText type="subtitle" style={styles.header}>📝To-Do Reminder</ThemedText>
+
+      <ThemedView style={styles.form}>
+        <AppInput
+          placeholder="Task Title"
+          value={title}
+          onChangeText={setTitle}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
+
+        <AppInput
+          placeholder="Description (optional)"
+          value={description}
+          onChangeText={setDescription}
+          multiline
+        />
+
+        <AppSelectDate
+          value={reminderTime}
+          onChange={(date) => {
+            if (date) setReminderTime(date);
+          }}
+        />
+
+        <Button
+          title="Додати нагадування"
+          onPress={() => addTask()}
+        />
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TaskItem task={item} onDelete={deleteTask} />
+        )}
+        style={styles.taskList}
+        ListEmptyComponent={
+          <ThemedText style={styles.emptyText}>No tasks yet. Add one above!</ThemedText>
+        }
+      />
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    padding: 16,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  header: {
+    marginTop: 60,
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  form: {
+    marginBottom: 20,
+    padding: 16,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+  },
+  taskList: {
+    flex: 1,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#888',
   },
 });
