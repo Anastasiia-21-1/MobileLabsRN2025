@@ -131,6 +131,24 @@ class FileSystemService {
       throw error;
     }
   }
+
+  public async updateTextFile(filePath: string, content: string): Promise<void> {
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      if (!fileInfo.exists) {
+        throw new Error('File does not exist');
+      }
+
+      if (fileInfo.isDirectory) {
+        throw new Error('Cannot update a directory as a text file');
+      }
+
+      await FileSystem.writeAsStringAsync(filePath, content);
+    } catch (error) {
+      console.error('Error updating text file:', error);
+      throw error;
+    }
+  }
 }
 
 export const fileSystemService = new FileSystemService();
