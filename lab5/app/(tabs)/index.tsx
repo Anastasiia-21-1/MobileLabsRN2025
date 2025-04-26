@@ -10,6 +10,7 @@ import {CreateFileDialog} from '@/components/CreateFileDialog';
 import {TextFileViewer} from '@/components/TextFileViewer';
 import {DeleteConfirmationDialog} from '@/components/DeleteConfirmationDialog';
 import {FileDetailsDialog} from '@/components/FileDetailsDialog';
+import {MemoryStats} from '@/components/MemoryStats';
 import {FileSystemEntry, fileSystemService} from "@/services/FileSystemService";
 
 export default function HomeScreen() {
@@ -108,6 +109,8 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.fileManager}>
+        <MemoryStats />
+
         <PathDisplay
           currentPath={currentPath}
           basePath={fileSystemService.getBaseDirectory()}
