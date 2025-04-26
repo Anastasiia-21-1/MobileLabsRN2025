@@ -7,6 +7,7 @@ import {PathDisplay} from '@/components/PathDisplay';
 import {NavigationControls} from '@/components/NavigationControls';
 import {CreateFolderDialog} from '@/components/CreateFolderDialog';
 import {CreateFileDialog} from '@/components/CreateFileDialog';
+import {TextFileViewer} from '@/components/TextFileViewer';
 import {FileSystemEntry, fileSystemService} from "@/services/FileSystemService";
 
 export default function HomeScreen() {
@@ -14,6 +15,8 @@ export default function HomeScreen() {
   const [directoryContents, setDirectoryContents] = useState<FileSystemEntry[]>([]);
   const [isFolderDialogVisible, setIsFolderDialogVisible] = useState(false);
   const [isFileDialogVisible, setIsFileDialogVisible] = useState(false);
+  const [isTextFileViewerVisible, setIsTextFileViewerVisible] = useState(false);
+  const [currentTextFile, setCurrentTextFile] = useState<{ path: string; name: string } | null>(null);
 
   useEffect(() => {
     const initializeFileSystem = async () => {
@@ -39,6 +42,9 @@ export default function HomeScreen() {
     if (entry.isDirectory) {
       setCurrentPath(entry.uri);
       loadDirectoryContents(entry.uri);
+    } else if (entry.name.endsWith('.txt')) {
+      setCurrentTextFile({ path: entry.uri, name: entry.name });
+      setIsTextFileViewerVisible(true);
     }
   };
 
@@ -102,6 +108,15 @@ export default function HomeScreen() {
         onClose={() => setIsFileDialogVisible(false)}
         onCreateFile={handleCreateFile}
       />
+
+      {currentTextFile && (
+        <TextFileViewer
+          visible={isTextFileViewerVisible}
+          filePath={currentTextFile.path}
+          fileName={currentTextFile.name}
+          onClose={() => setIsTextFileViewerVisible(false)}
+        />
+      )}
     </SafeAreaView>
   );
 }

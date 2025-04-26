@@ -112,6 +112,25 @@ class FileSystemService {
       throw error;
     }
   }
+
+  public async readTextFile(filePath: string): Promise<string> {
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      if (!fileInfo.exists) {
+        throw new Error('File does not exist');
+      }
+
+      if (fileInfo.isDirectory) {
+        throw new Error('Cannot read a directory as a text file');
+      }
+
+      const content = await FileSystem.readAsStringAsync(filePath);
+      return content;
+    } catch (error) {
+      console.error('Error reading text file:', error);
+      throw error;
+    }
+  }
 }
 
 export const fileSystemService = new FileSystemService();
