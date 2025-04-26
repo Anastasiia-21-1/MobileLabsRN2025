@@ -1,45 +1,41 @@
 import Constants from "expo-constants";
 import {LogLevel, NotificationWillDisplayEvent, OneSignal} from "react-native-onesignal";
-import axios from "axios";
 
 const oneSignalAppId = Constants?.expoConfig?.extra?.oneSignalId
 const oneSignalAuthToken = Constants?.expoConfig?.extra?.oneSignalAuthToken
 
-const oneSignalApi = axios.create({
-  baseURL: "https://api.onesignal.com/notifications",
-  headers: {
-    'Accept': 'application/json',
-    'Authorization': `Basic ${oneSignalAuthToken}`,
-    'Content-Type': 'application/json'
-  }
-})
+const baseHeaders = {
+  'Accept': 'application/json',
+  'Authorization': `Basic ${oneSignalAuthToken}`,
+  'Content-Type': 'application/json'
+}
 
 if (!oneSignalAppId || !oneSignalAuthToken) {
   throw new Error('OneSignal credentials not found');
 }
 
 export const send = async (title: string, description: string, time: Date) => {
-  return await oneSignalApi.post("", {
-    params: {
-      c: "push"
-    },
-    body: {
+  const result = await fetch("https://api.onesignal.com/notifications?c=push", {
+    method: 'POST',
+    headers: baseHeaders,
+    body: JSON.stringify({
       app_id: oneSignalAppId,
       contents: {
         en: `${title}\n${description}`
       },
       included_segments: ['All'],
       send_after: time
-    }
+    })
   })
+  return result.json()
 };
 
 export const cancel = async (id: string) => {
-  return oneSignalApi.delete(`/${id}`, {
-    params: {
-      app_id: oneSignalAppId
-    }
+  const result = await fetch(`https://api.onesignal.com/notifications/${id}?app_id=${oneSignalAppId}`, {
+    method: 'DELETE',
+    headers: baseHeaders,
   })
+  return result.json()
 };
 
 const handleForegroundWillDisplay = (event: NotificationWillDisplayEvent) => {
